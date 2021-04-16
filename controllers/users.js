@@ -10,7 +10,7 @@ exports.create = async (req, res, next) => {
       email
     }, password);
 
-    res.status(200).json({ message: "New User Registered Successfully.", user });
+    res.status(200).json({ message: "New User Registered Successfully."});
   } catch (error) {
     next(error);
   }
