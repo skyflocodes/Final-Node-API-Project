@@ -28,6 +28,39 @@ mongoose.connect(
 )
 .catch(error => console.error(error));
 
+// Add authentication modules
+const passport = require('passport');
+const session = require('express-session');
+app.use(session({
+  secret: "My Secret",
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+const User = require('./models/user');
+passport.use(User.createStrategy());
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
+const JWTStrategy = require('passport-jwt').Strategy;
+const ExtractJWT = require('passport-jwt').ExtractJwt;
+
+passport.use(new JWTStrategy({
+  secretOrKey: "My Secret",
+  jwtFromRequest: ExtractJWT.fromExtractors([
+    ExtractJWT.fromUrlQueryParameter('secret_token'),
+    ExtractJWT.fromBodyField('secret_token')
+  ])
+}, async (token, done) => {
+  try {
+    return done(null, token.user);
+  } catch (error) {
+    done(error);
+  }
+}));
+
 const routes = require('./routes');
 const router = routes(express.Router());
 app.use(router);
